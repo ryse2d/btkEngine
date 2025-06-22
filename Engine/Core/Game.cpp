@@ -11,6 +11,10 @@ Game::~Game() { Shutdown(); }
 
 bool Game::Init(const string& title, int widht, int height) {
 
+	//Physics System
+	m_Physics.Init(PPM, 0.f, 0.f);
+
+
 	m_WindowWidth = widht;
 	m_WindowHeight = height;
 
@@ -42,6 +46,22 @@ bool Game::Init(const string& title, int widht, int height) {
 
 	//pixel boyutu
 	SDL_QueryTexture(m_BrickTex, nullptr, nullptr, &m_BrickDst.w, &m_BrickDst.h);
+
+	//Brick/Tuğla için fizik
+
+	m_BrickBody = m_Physics.CreateBox(
+		m_BrickPos.x + m_BrickDst.w / 2,
+		m_BrickPos.y + m_BrickDst.h / 2,
+		(float)m_BrickDst.w, (float)m_BrickDst.h,
+		true, 1.f, 0.8f);
+
+	//Duvarlar
+	m_Physics.CreateBox(m_WindowWidth / 2, 0, m_WindowWidth, 10, false);
+	m_Physics.CreateBox(m_WindowWidth / 2, m_WindowHeight, m_WindowWidth, 10, false);
+	m_Physics.CreateBox(0, m_WindowHeight/2,10,m_WindowHeight,false);
+	m_Physics.CreateBox(m_WindowWidth, m_WindowHeight/2, 10, m_WindowHeight, false);
+
+
 
 
 	m_isRunning = true;
@@ -127,20 +147,17 @@ void Game::ProcessInput() {
 
 void Game::Update(float dt) {
 
-	//WASD Haraketi
-	m_BrickPos.x += m_InputDir.x * m_PlayerSpeed * dt;
-	m_BrickPos.y += m_InputDir.y * m_PlayerSpeed * dt;
+	m_Physics.Step(dt);
+	
+	//WASD - Momentum Fizik
+	b2Vec2 impulse{ m_InputDir.x * 5.f, m_InputDir.y * 5.f };
+	if (impulse.LengthSquared() > 0)
+		m_BrickBody->ApplyLinearImpulseToCenter(impulse, true);
 
-	//Ekran sınırı
-	if (m_BrickPos.x < 0) m_BrickPos.x = 0;
-	if (m_BrickPos.x + m_BrickDst.w > m_WindowWidth)
-		m_BrickPos.x = m_WindowWidth - m_BrickDst.w;
-
-	if (m_BrickPos.y < 0) m_BrickPos.y = 0;
-	if (m_BrickPos.y + m_BrickDst.h > m_WindowHeight)
-		m_BrickPos.y = m_WindowHeight - m_BrickDst.h;
-
-
+	//Sprite'a yansıt
+	b2Vec2 p = m_BrickBody->GetPosition();
+	m_BrickPos.x = p.x * PPM - m_BrickDst.w / 2;
+	m_BrickPos.y = p.y * PPM - m_BrickDst.h / 2;
 }
 
 void Game::Render() {
@@ -157,6 +174,7 @@ void Game::Render() {
 }
 
 void Game::Shutdown() {
+
 	if (m_Renderer) { SDL_DestroyRenderer(m_Renderer); 
 	
 	m_Renderer = nullptr;//Renderer yoksa yok et
@@ -167,6 +185,7 @@ void Game::Shutdown() {
 		m_Window = nullptr; //Window yoksa yok et
 	};
 
+	m_Physics.Shutdown();
 	SDL_Quit();
 }
 

@@ -1,9 +1,10 @@
 ﻿#pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <Box2D/Box2D.h>
+#include "PhysicsSystem.h"
 #include <string>
 
+constexpr float PPM = 100.f;
 
 using namespace std;
 
@@ -27,6 +28,10 @@ private:
 	SDL_Window* m_Window;
 	SDL_Renderer* m_Renderer;
 	SDL_Texture* LoadTexture(const string& path);
+
+	//Physics
+	PhysicsSystem m_Physics;
+	b2Body* m_BrickBody = nullptr;
 
 	//vectors
 	struct Vec2 { float x{ 0.f }, y{ 0.f }; };

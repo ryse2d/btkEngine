@@ -132,9 +132,11 @@
   <ItemGroup>
     <ClCompile Include="Application\main.cpp" />
     <ClCompile Include="Engine\Core\Game.cpp" />
+    <ClCompile Include="Engine\Core\PhysicsSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Core\Game.h" />
+    <ClInclude Include="Engine\Core\PhysicsSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
