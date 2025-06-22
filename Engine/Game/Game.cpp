@@ -2,6 +2,8 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
+
+
 constexpr int TARGET_FPS = 60;
 constexpr int FRAME_DELAY = 1000 / TARGET_FPS;
 
@@ -42,6 +44,7 @@ bool Game::Init(const string& title, int widht, int height) {
 	//Textures
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 	m_BrickTex = LoadTexture("Assets/Textures/brick.png");
+
 	if (!m_BrickTex) return false;
 
 	//pixel boyutu
@@ -60,8 +63,6 @@ bool Game::Init(const string& title, int widht, int height) {
 	m_Physics.CreateBox(m_WindowWidth / 2, m_WindowHeight, m_WindowWidth, 10, false);
 	m_Physics.CreateBox(0, m_WindowHeight/2,10,m_WindowHeight,false);
 	m_Physics.CreateBox(m_WindowWidth, m_WindowHeight/2, 10, m_WindowHeight, false);
-
-
 
 
 	m_isRunning = true;
@@ -141,8 +142,6 @@ void Game::ProcessInput() {
 		if (keys[SDL_SCANCODE_D]) m_InputDir.x = 1.f;
 
 	}
-
-
 }
 
 void Game::Update(float dt) {
@@ -150,7 +149,7 @@ void Game::Update(float dt) {
 	m_Physics.Step(dt);
 	
 	//WASD - Momentum Fizik
-	b2Vec2 impulse{ m_InputDir.x * 5.f, m_InputDir.y * 5.f };
+	b2Vec2 impulse{ m_InputDir.x * 1.f, m_InputDir.y * 1.f };
 	if (impulse.LengthSquared() > 0)
 		m_BrickBody->ApplyLinearImpulseToCenter(impulse, true);
 
@@ -165,10 +164,13 @@ void Game::Render() {
 	SDL_SetRenderDrawColor(m_Renderer, 125, 30, 200, 255); //Arkaplan 
 	SDL_RenderClear(m_Renderer); //Arkaplanı temizle
 
+	m_RQ.Clear();
+
 	m_BrickDst.x = static_cast<int> (m_BrickPos.x);
 	m_BrickDst.y = static_cast<int> (m_BrickPos.y);
+	m_RQ.Add({ m_BrickTex, m_BrickDst,SDL_Rect{0,0,0,0},10 });
 
-	SDL_RenderCopy(m_Renderer, m_BrickTex, nullptr, &m_BrickDst);
+	m_RQ.Flush(m_Renderer);
 
 	SDL_RenderPresent(m_Renderer); //Render et - //Double-buffering
 }

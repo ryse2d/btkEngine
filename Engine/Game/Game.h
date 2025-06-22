@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "PhysicsSystem.h"
+#include "../Core/PhysicsSystem.h"
+#include "../Core/RenderQueue.h"
 #include <string>
 
 constexpr float PPM = 100.f;
@@ -36,10 +37,14 @@ private:
 	//vectors
 	struct Vec2 { float x{ 0.f }, y{ 0.f }; };
 	SDL_Texture* m_BrickTex = nullptr;
+	SDL_Texture* m_TuglaTex = nullptr;
 	SDL_Rect m_BrickDst{ 0,0,0,0 };
+	SDL_Rect m_TuglaDst{ 0,0,0,0 };
 	Vec2 m_BrickPos{ 100.f,100.f };
 	Vec2 m_BrickVel{ 180.f,90.f };
 
+	//Sorting
+	RenderQueue m_RQ;
 	//Movement / Haraket
 	float m_PlayerSpeed = 250.f;
 	Vec2 m_InputDir{ 0.f,0.f }; // -1,1 aralık vektörü

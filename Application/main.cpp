@@ -1,6 +1,6 @@
 #include <iostream>
 #include <SDL2/SDL.h>
-#include "../Engine/Core/Game.h"
+#include "../Engine/Game/Game.h"
 using namespace std;
 
 int main(int argc, char* argv[]) {
