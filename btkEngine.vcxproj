@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,14 +132,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\main.cpp" />
+    <ClCompile Include="Engine\Assets\AssetManager.cpp" />
+    <ClCompile Include="Engine\Assets\FontManager.cpp" />
+    <ClCompile Include="Engine\Assets\SoundManager.cpp" />
+    <ClCompile Include="Engine\Core\Animation.cpp" />
     <ClCompile Include="Engine\Game\Game.cpp" />
     <ClCompile Include="Engine\Core\PhysicsSystem.cpp" />
+    <ClCompile Include="Engine\Game\Paddle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Assets\AssetManager.h" />
+    <ClInclude Include="Engine\Assets\FontManager.h" />
+    <ClInclude Include="Engine\Assets\SoundManager.h" />
+    <ClInclude Include="Engine\Core\Animation.h" />
     <ClInclude Include="Engine\Game\Game.h" />
     <ClInclude Include="Engine\Core\PhysicsSystem.h" />
     <ClInclude Include="Engine\Core\RenderQueue.h" />
+    <ClInclude Include="Engine\Game\Paddle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

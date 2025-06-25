@@ -2,8 +2,6 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-
-
 constexpr int TARGET_FPS = 60;
 constexpr int FRAME_DELAY = 1000 / TARGET_FPS;
 
@@ -42,28 +40,16 @@ bool Game::Init(const string& title, int widht, int height) {
 	}
 
 	//Textures
-	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
-	m_BrickTex = LoadTexture("Assets/Textures/brick.png");
+	m_Assets.Init(m_Renderer);
+	//Paddles
+	SDL_Texture* paddleTex = m_Assets.GetTexture("paddle", "Assets/Textures/paddle.png");
+	m_PaddleL.Init(m_Physics, 32, m_WindowHeight / 2.f);
+	m_PaddleR.Init(m_Physics, m_WindowWidth-32, m_WindowHeight / 2.f);
 
-	if (!m_BrickTex) return false;
-
-	//pixel boyutu
-	SDL_QueryTexture(m_BrickTex, nullptr, nullptr, &m_BrickDst.w, &m_BrickDst.h);
-
-	//Brick/Tuğla için fizik
-
-	m_BrickBody = m_Physics.CreateBox(
-		m_BrickPos.x + m_BrickDst.w / 2,
-		m_BrickPos.y + m_BrickDst.h / 2,
-		(float)m_BrickDst.w, (float)m_BrickDst.h,
-		true, 1.f, 0.8f);
-
-	//Duvarlar
-	m_Physics.CreateBox(m_WindowWidth / 2, 0, m_WindowWidth, 10, false);
-	m_Physics.CreateBox(m_WindowWidth / 2, m_WindowHeight, m_WindowWidth, 10, false);
-	m_Physics.CreateBox(0, m_WindowHeight/2,10,m_WindowHeight,false);
-	m_Physics.CreateBox(m_WindowWidth, m_WindowHeight/2, 10, m_WindowHeight, false);
-
+	//Sounds
+	m_Sounds.Init();
+	m_Sounds.GetSound("background", "Assets/Sounds/pixel.mp3");
+	m_Sounds.Play("background");
 
 	m_isRunning = true;
 	return true;
@@ -93,12 +79,6 @@ void Game::Run() {
 		if (elapsed < FRAME_DELAY)
 			SDL_Delay(FRAME_DELAY - elapsed);
 
-		//FPS Ölçer
-		if (SDL_GetTicks() - fpsTimer >= 1000) {
-			cout << "FPS: " << frameCnt << endl;
-			frameCnt = 0;
-			fpsTimer += 1000;
-		}
 	}
 }
 
@@ -135,47 +115,37 @@ void Game::ProcessInput() {
 
 		const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
-		m_InputDir = { 0.f,0.f };
-		if (keys[SDL_SCANCODE_W]) m_InputDir.y = -1.f;
-		if (keys[SDL_SCANCODE_S]) m_InputDir.y = 1.f;
-		if (keys[SDL_SCANCODE_A]) m_InputDir.x = -1.f;
-		if (keys[SDL_SCANCODE_D]) m_InputDir.x = 1.f;
-
 	}
 }
 
 void Game::Update(float dt) {
 
 	m_Physics.Step(dt);
+	const Uint8* keys = SDL_GetKeyboardState(nullptr);
+	m_PaddleL.Update(keys, dt, SDL_SCANCODE_W, SDL_SCANCODE_S, 800.f);
+	m_PaddleR.Update(keys, dt, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, 800.f);
 	
-	//WASD - Momentum Fizik
-	b2Vec2 impulse{ m_InputDir.x * 1.f, m_InputDir.y * 1.f };
-	if (impulse.LengthSquared() > 0)
-		m_BrickBody->ApplyLinearImpulseToCenter(impulse, true);
-
-	//Sprite'a yansıt
-	b2Vec2 p = m_BrickBody->GetPosition();
-	m_BrickPos.x = p.x * PPM - m_BrickDst.w / 2;
-	m_BrickPos.y = p.y * PPM - m_BrickDst.h / 2;
 }
 
 void Game::Render() {
 
 	SDL_SetRenderDrawColor(m_Renderer, 125, 30, 200, 255); //Arkaplan 
 	SDL_RenderClear(m_Renderer); //Arkaplanı temizle
-
 	m_RQ.Clear();
 
-	m_BrickDst.x = static_cast<int> (m_BrickPos.x);
-	m_BrickDst.y = static_cast<int> (m_BrickPos.y);
-	m_RQ.Add({ m_BrickTex, m_BrickDst,SDL_Rect{0,0,0,0},10 });
+	SDL_Texture* paddleTex = m_Assets.GetTexture("paddle");
+	m_PaddleL.Draw(m_RQ, paddleTex, 10);
+	m_PaddleR.Draw(m_RQ, paddleTex, 10);
+
 
 	m_RQ.Flush(m_Renderer);
-
 	SDL_RenderPresent(m_Renderer); //Render et - //Double-buffering
 }
 
 void Game::Shutdown() {
+
+	//assets
+	m_Assets.Shutdown();
 
 	if (m_Renderer) { SDL_DestroyRenderer(m_Renderer); 
 	
@@ -188,16 +158,9 @@ void Game::Shutdown() {
 	};
 
 	m_Physics.Shutdown();
+
 	SDL_Quit();
-}
 
-SDL_Texture* Game::LoadTexture(const string& path) {
-	SDL_Surface* surface = IMG_Load(path.c_str());
-	if (!surface) {
-		cerr << IMG_GetError() << "\n"; return nullptr;
-	}
 
-	SDL_Texture* tex = SDL_CreateTextureFromSurface(m_Renderer, surface);
-	SDL_FreeSurface(surface);
-	return tex;
+
 }

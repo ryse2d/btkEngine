@@ -4,9 +4,11 @@
 #include "../Core/PhysicsSystem.h"
 #include "../Core/RenderQueue.h"
 #include <string>
-
-constexpr float PPM = 100.f;
-
+#include "../Assets/AssetManager.h"
+#include "../Core/Animation.h"
+#include "../Assets/FontManager.h"
+#include "../Assets/SoundManager.h"
+#include "Paddle.h"
 using namespace std;
 
 class Game
@@ -28,26 +30,21 @@ private:
 private:
 	SDL_Window* m_Window;
 	SDL_Renderer* m_Renderer;
-	SDL_Texture* LoadTexture(const string& path);
 
 	//Physics
 	PhysicsSystem m_Physics;
-	b2Body* m_BrickBody = nullptr;
 
 	//vectors
 	struct Vec2 { float x{ 0.f }, y{ 0.f }; };
-	SDL_Texture* m_BrickTex = nullptr;
-	SDL_Texture* m_TuglaTex = nullptr;
-	SDL_Rect m_BrickDst{ 0,0,0,0 };
-	SDL_Rect m_TuglaDst{ 0,0,0,0 };
-	Vec2 m_BrickPos{ 100.f,100.f };
-	Vec2 m_BrickVel{ 180.f,90.f };
 
 	//Sorting
 	RenderQueue m_RQ;
-	//Movement / Haraket
-	float m_PlayerSpeed = 250.f;
-	Vec2 m_InputDir{ 0.f,0.f }; // -1,1 aralık vektörü
+	//Asset
+	Paddle m_PaddleL, m_PaddleR;
+	AssetManager m_Assets;
+
+	//Sounds
+	SoundManager m_Sounds;
 
 	bool m_isRunning = false;
 	int m_WindowWidth = 800;

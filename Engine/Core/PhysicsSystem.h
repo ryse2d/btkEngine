@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Box2D/Box2D.h>
-
+constexpr float PPM = 100.f;
 class PhysicsSystem {
 public:
 	bool Init(float ppm, float gravityX = 0.f, float gravityY = 0.f);
