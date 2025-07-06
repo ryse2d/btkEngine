@@ -2,9 +2,11 @@
 
 void Paddle::Init(PhysicsSystem& phys, float px, float py) {
 	float w = 16.f, h = 96.f; //Paddle Boyutu
-	m_Body = phys.CreateBox(px, py, w, h, true, 1.f, 0.2f);
-	m_Body->SetFixedRotation(true);
-	m_Body->SetBullet(true);
+    m_Body = phys.CreateBox(px, py, w, h, true, 1.f, 0.2f);
+    // use a kinematic body so the paddle isn't affected by collisions
+    m_Body->SetType(b2_kinematicBody);
+    m_Body->SetFixedRotation(true);
+    m_Body->SetBullet(true);
 
 	m_Dst.w = static_cast<int>(w);
 	m_Dst.h = static_cast<int> (h);
