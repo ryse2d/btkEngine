@@ -10,8 +10,9 @@ void Paddle::Init(PhysicsSystem& phys, float px, float py) {
 	m_Dst.h = static_cast<int> (h);
 }
 
-void Paddle::Update(const Uint8* keys, float dt, bool keyUp, bool keyDown, float speed) {
-	int dir = 0;
+void Paddle::Update(const Uint8* keys, float dt,
+                    SDL_Scancode keyUp, SDL_Scancode keyDown, float speed) {
+        int dir = 0;
 	if (keys[keyUp]) dir = -1;
 	if (keys[keyDown]) dir = 1;
 
