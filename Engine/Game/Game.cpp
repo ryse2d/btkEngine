@@ -1,4 +1,5 @@
-﻿#include "Game.h"
+#include "Game.h"
+#include "Ball.h"
 #include <iostream>
 #include <SDL2/SDL.h>
 
@@ -39,17 +40,30 @@ bool Game::Init(const string& title, int widht, int height) {
 		return false;
 	}
 
-	//Textures
-	m_Assets.Init(m_Renderer);
-	//Paddles
-	SDL_Texture* paddleTex = m_Assets.GetTexture("paddle", "Assets/Textures/paddle.png");
-	m_PaddleL.Init(m_Physics, 32, m_WindowHeight / 2.f);
-	m_PaddleR.Init(m_Physics, m_WindowWidth-32, m_WindowHeight / 2.f);
+        //Textures
+        m_Assets.Init(m_Renderer);
+        //Fonts
+        m_Fonts.Init(m_Renderer);
+        //Paddles
+        SDL_Texture* paddleTex = m_Assets.GetTexture("paddle", "Assets/Textures/paddle.png");
+        m_PaddleL.Init(m_Physics, 32, m_WindowHeight / 2.f);
+        m_PaddleR.Init(m_Physics, m_WindowWidth - 32, m_WindowHeight / 2.f);
+        //Ball
+        m_Ball.Init(m_Physics, m_WindowWidth / 2.f, m_WindowHeight / 2.f, 8.f);
+        m_Ball.Launch(-300.f, -150.f);
+        //Walls
+        m_TopWall = m_Physics.CreateBox(m_WindowWidth / 2.f, 5.f, m_WindowWidth, 10.f, false);
+        m_BottomWall = m_Physics.CreateBox(m_WindowWidth / 2.f, m_WindowHeight - 5.f, m_WindowWidth, 10.f, false);
 
-	//Sounds
-	m_Sounds.Init();
-	m_Sounds.GetSound("background", "Assets/Sounds/pixel.mp3");
-	m_Sounds.Play("background");
+        //Sounds
+        m_Sounds.Init();
+        m_Sounds.GetSound("background", "Assets/Sounds/pixel.mp3");
+        m_Sounds.Play("background");
+
+        m_ScoreTexL = nullptr;
+        m_ScoreTexR = nullptr;
+        m_ScoreLeft = 0;
+        m_ScoreRight = 0;
 
 	m_isRunning = true;
 	return true;
@@ -126,6 +140,24 @@ void Game::Update(float dt) {
                          0.f, static_cast<float>(m_WindowHeight));
         m_PaddleR.Update(keys, dt, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, 800.f,
                          0.f, static_cast<float>(m_WindowHeight));
+
+        m_Ball.Update();
+
+        b2Vec2 pos = m_Ball.Body()->GetPosition();
+        if (pos.x * PPM < 0) {
+                m_ScoreRight++;
+                m_Ball.Reset(m_WindowWidth / 2.f, m_WindowHeight / 2.f);
+                m_Ball.Launch(300.f, -150.f);
+        } else if (pos.x * PPM > m_WindowWidth) {
+                m_ScoreLeft++;
+                m_Ball.Reset(m_WindowWidth / 2.f, m_WindowHeight / 2.f);
+                m_Ball.Launch(-300.f, 150.f);
+        }
+
+        //update score textures
+        SDL_Color col{255,255,255,255};
+        m_ScoreTexL = m_Fonts.GetTextTexture(std::to_string(m_ScoreLeft), "Assets/Fonts/roboto.ttf", 24, col);
+        m_ScoreTexR = m_Fonts.GetTextTexture(std::to_string(m_ScoreRight), "Assets/Fonts/roboto.ttf", 24, col);
 	
 }
 
@@ -135,19 +167,32 @@ void Game::Render() {
 	SDL_RenderClear(m_Renderer); //Arkaplanı temizle
 	m_RQ.Clear();
 
-	SDL_Texture* paddleTex = m_Assets.GetTexture("paddle");
-	m_PaddleL.Draw(m_RQ, paddleTex, 10);
-	m_PaddleR.Draw(m_RQ, paddleTex, 10);
+        SDL_Texture* paddleTex = m_Assets.GetTexture("paddle");
+        m_PaddleL.Draw(m_RQ, paddleTex, 10);
+        m_PaddleR.Draw(m_RQ, paddleTex, 10);
+        SDL_Texture* brickTex = m_Assets.GetTexture("brick", "Assets/Textures/brick.png");
+        m_Ball.Draw(m_RQ, brickTex, 5);
+
+        if (m_ScoreTexL && m_ScoreTexR) {
+                int w1, h1, w2, h2;
+                SDL_QueryTexture(m_ScoreTexL, nullptr, nullptr, &w1, &h1);
+                SDL_QueryTexture(m_ScoreTexR, nullptr, nullptr, &w2, &h2);
+                SDL_Rect dl{ m_WindowWidth/4 - w1/2, 20, w1, h1 };
+                SDL_Rect dr{ 3*m_WindowWidth/4 - w2/2, 20, w2, h2 };
+                m_RQ.Add({ m_ScoreTexL, dl, SDL_Rect{0,0,0,0}, 1 });
+                m_RQ.Add({ m_ScoreTexR, dr, SDL_Rect{0,0,0,0}, 1 });
+        }
 
 
-	m_RQ.Flush(m_Renderer);
-	SDL_RenderPresent(m_Renderer); //Render et - //Double-buffering
+        m_RQ.Flush(m_Renderer);
+        SDL_RenderPresent(m_Renderer); //Render et - //Double-buffering
 }
 
 void Game::Shutdown() {
 
-	//assets
-	m_Assets.Shutdown();
+        //assets
+        m_Assets.Shutdown();
+        m_Fonts.Shutdown();
 
 	if (m_Renderer) { SDL_DestroyRenderer(m_Renderer); 
 	
