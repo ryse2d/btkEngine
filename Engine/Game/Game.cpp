@@ -122,8 +122,10 @@ void Game::Update(float dt) {
 
 	m_Physics.Step(dt);
 	const Uint8* keys = SDL_GetKeyboardState(nullptr);
-	m_PaddleL.Update(keys, dt, SDL_SCANCODE_W, SDL_SCANCODE_S, 800.f);
-	m_PaddleR.Update(keys, dt, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, 800.f);
+        m_PaddleL.Update(keys, dt, SDL_SCANCODE_W, SDL_SCANCODE_S, 800.f,
+                         0.f, static_cast<float>(m_WindowHeight));
+        m_PaddleR.Update(keys, dt, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, 800.f,
+                         0.f, static_cast<float>(m_WindowHeight));
 	
 }
 
