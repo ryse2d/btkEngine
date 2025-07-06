@@ -8,7 +8,8 @@ public:
     void Init(PhysicsSystem& phys, float px, float py);
     // keyUp and keyDown indicate which keyboard scancodes move the paddle
     void Update(const Uint8* keys, float dt,
-                SDL_Scancode keyUp, SDL_Scancode keyDown, float speed);
+                SDL_Scancode keyUp, SDL_Scancode keyDown, float speed,
+                float minY, float maxY);
     void Draw(RenderQueue& rq, SDL_Texture* tex, int z);
 private:
     b2Body* m_Body = nullptr;
